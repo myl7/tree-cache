@@ -44,6 +44,29 @@ impl Tree {
         }
         node.write().unwrap().id = Some(id.as_ref().to_owned());
     }
+
+    pub fn get(&self, path: impl AsRef<str>) -> Option<String> {
+        let p = path.as_ref().to_owned();
+        let mut components = p.split("/").collect::<Vec<_>>();
+        components = format_components(components);
+
+        let mut node = self.root.clone();
+        for &c in components.iter() {
+            let next_node = match node
+                .read()
+                .unwrap()
+                .children
+                .iter()
+                .find(|child| child.read().unwrap().name.as_str() == c)
+            {
+                Some(child) => child.clone(),
+                None => return None,
+            };
+            node = next_node;
+        }
+        let id = node.read().unwrap().id.clone();
+        id
+    }
 }
 
 fn format_components(mut components: Vec<&str>) -> Vec<&str> {
@@ -85,5 +108,16 @@ mod tests {
         let new_node = root.children[0].read().unwrap();
         assert_eq!(new_node.name, "test");
         assert_eq!(new_node.id, Some("0".to_owned()));
+    }
+
+    #[test]
+    fn test_get() {
+        let mut tree = Tree::new();
+        tree.insert("/test", "0");
+        tree.insert("/test/test/test", "1");
+        assert_eq!(tree.get("/test"), Some("0".to_owned()));
+        assert_eq!(tree.get("/test/test/test"), Some("1".to_owned()));
+        assert_eq!(tree.get("/test/test"), None);
+        assert_eq!(tree.get("/test/test/test/test"), None);
     }
 }
