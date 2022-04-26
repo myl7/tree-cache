@@ -143,7 +143,7 @@ mod tests {
         assert_eq!(root.children.len(), 1);
         let new_node = root.children[0].read().unwrap();
         assert_eq!(new_node.name, "test");
-        assert_eq!(new_node.id, Some("0".to_owned()));
+        assert_eq!(new_node.id.as_deref(), Some("0"));
     }
 
     #[test]
@@ -151,8 +151,8 @@ mod tests {
         let mut tree = Tree::new();
         tree.insert("/test", "0");
         tree.insert("/test/test/test", "1");
-        assert_eq!(tree.get("/test"), Some("0".to_owned()));
-        assert_eq!(tree.get("/test/test/test"), Some("1".to_owned()));
+        assert_eq!(tree.get("/test").as_deref(), Some("0"));
+        assert_eq!(tree.get("/test/test/test").as_deref(), Some("1"));
         assert_eq!(tree.get("/test/test"), None);
         assert_eq!(tree.get("/test/test/test/test"), None);
     }
