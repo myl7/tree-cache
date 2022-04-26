@@ -1,6 +1,6 @@
 # tree-cache
 
-Map path to ID and vice versa with cache
+Map path to ID with cache
 
 ## License
 
