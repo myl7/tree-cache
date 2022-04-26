@@ -67,6 +67,42 @@ impl Tree {
         let id = node.read().unwrap().id.clone();
         id
     }
+
+    pub fn invalid(&self, path: impl AsRef<str>) {
+        let p = path.as_ref().to_owned();
+        let mut components = p.split("/").collect::<Vec<_>>();
+        components = format_components(components);
+        let last_component = match components.last() {
+            Some(&c) => c,
+            None => return,
+        };
+        components.pop();
+
+        let mut node = self.root.clone();
+        for &c in components.iter() {
+            let next_node = match node
+                .read()
+                .unwrap()
+                .children
+                .iter()
+                .find(|child| child.read().unwrap().name.as_str() == c)
+            {
+                Some(child) => child.clone(),
+                None => return,
+            };
+            node = next_node
+        }
+        let mut node_write = node.write().unwrap();
+        if let Some(i) = node_write
+            .children
+            .iter()
+            .enumerate()
+            .find(|(_, child)| child.read().unwrap().name.as_str() == last_component)
+            .map(|(i, _)| i)
+        {
+            node_write.children.remove(i);
+        }
+    }
 }
 
 fn format_components(mut components: Vec<&str>) -> Vec<&str> {
@@ -119,5 +155,17 @@ mod tests {
         assert_eq!(tree.get("/test/test/test"), Some("1".to_owned()));
         assert_eq!(tree.get("/test/test"), None);
         assert_eq!(tree.get("/test/test/test/test"), None);
+    }
+
+    #[test]
+    fn test_invalid() {
+        let mut tree = Tree::new();
+        tree.insert("/test", "0");
+        tree.insert("/test/test", "1");
+        tree.insert("/test/test/test", "2");
+        tree.invalid("/test/test/test/test");
+        tree.invalid("/test/test");
+        assert_eq!(tree.get("/test/test/test"), None);
+        assert_eq!(tree.get("/test").as_deref(), Some("0"));
     }
 }
