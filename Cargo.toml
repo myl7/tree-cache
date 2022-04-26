@@ -1,0 +1,13 @@
+[package]
+name = "tree-cache"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["myl7 <myl@myl.moe>"]
+description = "Map path to ID and vice versa with cache"
+homepage = "https://github.com/myl7/tree-cache"
+repository = "https://github.com/myl7/tree-cache.git"
+documentation = "https://github.com/myl7/tree-cache.git#readme"
+keywords = ["tree", "cache", "path"]
+
+[dependencies]
